@@ -12,3 +12,4 @@ class ErrorParameters extends Error {
 }
 exports.default = ErrorParameters;
 //# sourceMappingURL=ErrorParameters.js.map
+//# sourceMappingURL=ErrorParameters.js.map

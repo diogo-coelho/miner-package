@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0});class ErrorParameters extends Error{constructor(e){super(e),this._name=this.constructor.name,this._message=e}get message(){return this._name+":"+this._message}}exports.default=ErrorParameters;

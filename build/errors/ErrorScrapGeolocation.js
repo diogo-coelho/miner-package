@@ -17,3 +17,4 @@ class ErrorScrapGeolocation extends Error {
 }
 exports.default = ErrorScrapGeolocation;
 //# sourceMappingURL=ErrorScrapGeolocation.js.map
+//# sourceMappingURL=ErrorScrapGeolocation.js.map

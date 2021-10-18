@@ -12,3 +12,4 @@ class ErrorStringCompanyName extends Error {
 }
 exports.default = ErrorStringCompanyName;
 //# sourceMappingURL=ErrorStringCompanyName.js.map
+//# sourceMappingURL=ErrorStringCompanyName.js.map

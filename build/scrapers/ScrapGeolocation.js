@@ -50,6 +50,7 @@ class ScrapGeolocation {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.insertCountryData();
+                yield this._page.waitForTimeout(2000);
                 yield this.insertCompanyData();
                 const companiesList = yield this.companiesList();
                 if (companiesList) {
@@ -242,4 +243,5 @@ class ScrapGeolocation {
     }
 }
 exports.default = ScrapGeolocation;
+//# sourceMappingURL=ScrapGeolocation.js.map
 //# sourceMappingURL=ScrapGeolocation.js.map

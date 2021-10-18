@@ -76,3 +76,4 @@ class Miner {
 }
 module.exports = Miner;
 //# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.js.map
