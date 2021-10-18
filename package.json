@@ -1,6 +1,6 @@
 {
   "name": "miner-package",
-  "version": "0.0.1-BETA",
+  "version": "APP_VERSION",
   "description": "",
   "main": "build/index.js",
   "scripts": {

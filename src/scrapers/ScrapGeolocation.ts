@@ -2,6 +2,7 @@
 
 /** import de pacotes */
 import Puppeteer from "puppeteer";
+import BrowserLauncher from "../utils/BrowserLauncher";
 import ErrorScrapGeolocation from "./../errors/ErrorScrapGeolocation";
 /** import de types */
 import { ICountryCodes, ICompanyLink, ICompanyInfo } from "./../types/types";
@@ -10,34 +11,20 @@ class ScrapGeolocation {
 
     private _companyName: string;
     private _country: ICountryCodes;
-    private _browser: Puppeteer.Browser;
+    private _browserLauncher: BrowserLauncher;
     private _page: Puppeteer.Page;
 
     public async init (companyName: string, country: ICountryCodes) : Promise<void> {
         try {
             this._companyName = companyName;
             this._country = country;
-            await this.launchBrowser();
-            const context: Puppeteer.BrowserContext = this._browser.defaultBrowserContext();
+            this._browserLauncher = new BrowserLauncher();
+            const context: Puppeteer.BrowserContext = await this._browserLauncher.browserPromise.then((browser) => browser.defaultBrowserContext());
             await context.overridePermissions("https://www.google.com.br/maps", ['geolocation']);
             this._page = await context.newPage();
         } catch (err) {
             throw new ErrorScrapGeolocation(err);
         }
-    }
-
-    private async launchBrowser () : Promise<void> {
-        this._browser = await Puppeteer.launch({
-            headless: false,
-            ignoreHTTPSErrors: true,
-            defaultViewport: null,
-            args: [
-                `--no-sandbox`,
-                `--disable-setuid-sandbox`,
-                `--ignore-certificate-errors`,
-                `--window-size=1300,768`,
-            ]
-        });
     }
 
     public async openPage () : Promise<boolean> {
@@ -57,6 +44,8 @@ class ScrapGeolocation {
 
     public async searchCompanies () : Promise<ICompanyLink[]> {
         try {
+            await this.insertCountryData(); 
+            await this._page.waitForTimeout(2000);  
             await this.insertCompanyData();            
             
             const companiesList: ICompanyLink[] = await this.companiesList();
@@ -66,21 +55,24 @@ class ScrapGeolocation {
                 const company = [];
                 company.push(await this.getCompanyLink());
                 return company;
-            }           
+            } 
 
         } catch (err) {
-            throw new ErrorScrapGeolocation(`Timeout connection exceed`);
+            if (err.indexOf('TimeoutError')) {
+                throw new ErrorScrapGeolocation(`Timeout connection exceed`);
+            }
+            throw new ErrorScrapGeolocation(err);
         }
     }
 
     private async insertCountryData () : Promise<boolean> {
         try {
-            await this._page.waitForSelector('.tactile-searchbox-input', { timeout: 10000 });
-            await this._page.click('.tactile-searchbox-input');
+            await this._page.waitForSelector('#searchboxinput', { timeout: 10000 });
+            await this._page.click('#searchboxinput');
             await this._page.keyboard.type(`${ this._country.code } `);
-            await this._page.click('.searchbox-searchbutton');
+            await this._page.click('#searchboxinput');
             await this._page.waitForResponse(response => response.status() === 200);
-            await this._page.waitForSelector('.section-layout', { timeout: 10000 });
+            await this._page.waitForSelector('#searchbox-searchbutton', { timeout: 10000 });
             
             return true;
         } catch (err) {
@@ -90,12 +82,12 @@ class ScrapGeolocation {
 
     private async insertCompanyData () : Promise<boolean> {
         try {
-            await this._page.waitForSelector('.tactile-searchbox-input', { timeout: 10000 });
-            await this._page.click('.tactile-searchbox-input');
-            await this._page.keyboard.type(`${ this._companyName }`);
-            await this._page.click('.searchbox-searchbutton');
+            await this._page.waitForSelector('#searchboxinput', { timeout: 10000 });
+            await this._page.click('#searchboxinput');
+            await this._page.keyboard.type(`${ this._companyName } `);
+            await this._page.click('#searchbox-searchbutton');
             await this._page.waitForResponse(response => response.status() === 200);
-            await this._page.waitForSelector('.section-layout', { timeout: 10000 });
+            await this._page.waitForSelector('.section-scrollbox', { timeout: 10000 });
 
             return true;
         } catch (err) {
@@ -104,11 +96,11 @@ class ScrapGeolocation {
     }
 
     private async companiesList () : Promise<ICompanyLink[]> {
-        return await this._page.waitForSelector('.section-layout.section-scrollbox', { timeout: 10000 })
+        return await this._page.waitForSelector('.section-scrollbox', { timeout: 10000 })
             .then(async () => {
                 const links: ICompanyLink[] = await this._page.evaluate(() => {
                     const data: ICompanyLink[] = [];
-                    const elements: NodeListOf<Element> = document.querySelectorAll('.section-layout.section-scrollbox > div:not([class])');
+                    const elements: NodeListOf<Element> = document.querySelectorAll('.section-scrollbox > div:not([class])');
                     for (const element of elements) {
                         data.push({ 
                             title: element.querySelector('.gm2-subtitle-alt-1').textContent.replace(/\r?\n|\r/g,'').trim(), 
@@ -120,17 +112,20 @@ class ScrapGeolocation {
 
                 return links;
             })
-            .catch(() => {
+            .catch((err) => {
+                if (err.indexOf('TimeoutError')) {
+                    throw new ErrorScrapGeolocation(`Timeout connection exceed`);
+                }
                 return null;
             })
     }
 
     private async getCompanyLink() : Promise<ICompanyLink> {
-        return await this._page.waitForSelector('.widget-pane-content-holder .section-layout h1', { timeout: 10000 })
+        return await this._page.waitForSelector('.widget-pane-content-holder .section-scrollbox h1', { timeout: 10000 })
             .then(async () => {
                 return await this._page.evaluate(() => {
                     const data = {
-                        title: document.querySelector('.widget-pane-content-holder .section-layout h1').textContent.replace(/\r?\n|\r/g,'').trim(),
+                        title: document.querySelector('.widget-pane-content-holder .section-scrollbox h1').textContent.replace(/\r?\n|\r/g,'').trim(),
                         href: window.location.href
                     }
 
@@ -163,7 +158,7 @@ class ScrapGeolocation {
     }
 
     private async companyInfo () : Promise<ICompanyInfo> {
-        return await this._page.waitForSelector('.widget-pane-content-holder .section-layout h1', { timeout: 10000 })
+        return await this._page.waitForSelector('.widget-pane-content-holder h1', { timeout: 10000 })
             .then(async () => {
                 return await this._page.evaluate(() => {
                     const data: ICompanyInfo = {
@@ -177,11 +172,11 @@ class ScrapGeolocation {
                         reviews: undefined
                     }
 
-                    if (document.querySelector('.widget-pane-content-holder .section-layout h1') != null) {
-                        data.name = document.querySelector('.widget-pane-content-holder .section-layout h1').textContent.replace(/\r?\n|\r/g,'').trim();
+                    if (document.querySelector('.widget-pane-content-holder h1') != null) {
+                        data.name = document.querySelector('.widget-pane-content-holder h1').textContent.replace(/\r?\n|\r/g,'').trim();
                     }
 
-                    const elements: NodeListOf<Element> = document.querySelectorAll(".widget-pane-content-holder .section-layout > div > button");
+                    const elements: NodeListOf<Element> = document.querySelectorAll(".widget-pane-content-holder .siAUzd-neVct > div > button");
                     for (const element of elements) {
                         if (element.getAttribute("data-item-id") == "address") {
                             data.address = element.textContent.replace(/\r?\n|\r/g,'').trim();
@@ -245,7 +240,7 @@ class ScrapGeolocation {
     }
 
     public closeBrowser () : void {
-        this._browser.close();
+        this._browserLauncher.closeBrowser();
     }
 }
 

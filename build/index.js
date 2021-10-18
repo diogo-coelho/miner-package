@@ -19,6 +19,7 @@ const FormattedStringCompanyName_1 = __importDefault(require("./utils/FormattedS
 const FormattedStringIsoCode_1 = __importDefault(require("./utils/FormattedStringIsoCode"));
 const FormattedStringWebsite_1 = __importDefault(require("./utils/FormattedStringWebsite"));
 const ScrapGeolocation_1 = __importDefault(require("./scrapers/ScrapGeolocation"));
+const ScrapGeolocation_2 = __importDefault(require("./scrapers/ScrapGeolocation"));
 class Miner {
     constructor(obj) {
         this.setParams(obj);
@@ -60,6 +61,13 @@ class Miner {
             this._scrapGeolocation = yield new ScrapGeolocation_1.default();
             yield this._scrapGeolocation.init(this._companyName, this._country);
             return this._scrapGeolocation;
+        });
+    }
+    scrapContacts() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this._scrapContacts = yield new ScrapGeolocation_2.default();
+            yield this._scrapContacts.init(this._companyName, this._country);
+            return this._scrapContacts;
         });
     }
     close() {

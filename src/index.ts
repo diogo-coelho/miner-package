@@ -9,6 +9,7 @@ import FormattedStringCompanyName from "./utils/FormattedStringCompanyName";
 import FormattedStringIsoCode from "./utils/FormattedStringIsoCode";
 import FormattedStringWebsite from "./utils/FormattedStringWebsite";
 import ScrapGeolocation from "./scrapers/ScrapGeolocation";
+import ScrapContacts from "./scrapers/ScrapGeolocation";
 
 class Miner {
 
@@ -16,6 +17,7 @@ class Miner {
     private _country: ICountryCodes;
     private _website: string;
     public _scrapGeolocation: ScrapGeolocation;
+    public _scrapContacts: ScrapContacts;
 
     constructor (obj: IMiner) {
         this.setParams(obj);
@@ -63,6 +65,13 @@ class Miner {
         await this._scrapGeolocation.init(this._companyName, this._country);
 
         return this._scrapGeolocation;
+    }
+
+    public async scrapContacts () : Promise<ScrapContacts> {
+        this._scrapContacts = await new ScrapContacts();
+        await this._scrapContacts.init(this._companyName, this._country);
+
+        return this._scrapContacts;
     }
 
     public close () : void {
