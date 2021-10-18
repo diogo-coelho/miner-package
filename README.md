@@ -1,5 +1,5 @@
 # Miner-Package
-version 0.0.1-BETA
+version 0.0.2-BETA
 
 ### Instalação 
 
