@@ -63,7 +63,7 @@ class ScrapGeolocation {
                 }
             }
             catch (err) {
-                if (err.indexOf('TimeoutError')) {
+                if (err.toString().indexOf('TimeoutError')) {
                     throw new ErrorScrapGeolocation_1.default(`Timeout connection exceed`);
                 }
                 throw new ErrorScrapGeolocation_1.default(err);
@@ -94,7 +94,7 @@ class ScrapGeolocation {
                 yield this._page.keyboard.type(`${this._companyName} `);
                 yield this._page.click('#searchbox-searchbutton');
                 yield this._page.waitForResponse(response => response.status() === 200);
-                yield this._page.waitForSelector('.section-scrollbox', { timeout: 10000 });
+                yield this._page.waitForSelector('h1', { timeout: 10000 });
                 return true;
             }
             catch (err) {
@@ -104,14 +104,14 @@ class ScrapGeolocation {
     }
     companiesList() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this._page.waitForSelector('.section-scrollbox', { timeout: 10000 })
+            return yield this._page.waitForSelector('.m6QErb.DxyBCb.kA9KIf.dS8AEf.ecceSd', { timeout: 10000 })
                 .then(() => __awaiter(this, void 0, void 0, function* () {
                 const links = yield this._page.evaluate(() => {
                     const data = [];
-                    const elements = document.querySelectorAll('.section-scrollbox > div:not([class])');
+                    const elements = document.querySelectorAll('.Nv2PK.tH5CWc.THOPZb');
                     for (const element of elements) {
                         data.push({
-                            title: element.querySelector('.gm2-subtitle-alt-1').textContent.replace(/\r?\n|\r/g, '').trim(),
+                            title: element.querySelector('.fontHeadlineSmall > span').textContent.replace(/\r?\n|\r/g, '').trim(),
                             href: element.querySelector('a').href
                         });
                     }
@@ -119,21 +119,19 @@ class ScrapGeolocation {
                 });
                 return links;
             }))
+                // eslint-disable-next-line no-unused-vars
                 .catch((err) => {
-                if (err.indexOf('TimeoutError')) {
-                    throw new ErrorScrapGeolocation_1.default(`Timeout connection exceed`);
-                }
                 return null;
             });
         });
     }
     getCompanyLink() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this._page.waitForSelector('.widget-pane-content-holder .section-scrollbox h1', { timeout: 10000 })
+            return yield this._page.waitForSelector('h1', { timeout: 10000 })
                 .then(() => __awaiter(this, void 0, void 0, function* () {
                 return yield this._page.evaluate(() => {
                     const data = {
-                        title: document.querySelector('.widget-pane-content-holder .section-scrollbox h1').textContent.replace(/\r?\n|\r/g, '').trim(),
+                        title: document.querySelector('h1').textContent.replace(/\r?\n|\r/g, '').trim(),
                         href: window.location.href
                     };
                     return data;
@@ -168,7 +166,7 @@ class ScrapGeolocation {
     }
     companyInfo() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this._page.waitForSelector('.widget-pane-content-holder h1', { timeout: 10000 })
+            return yield this._page.waitForSelector('h1', { timeout: 10000 })
                 .then(() => __awaiter(this, void 0, void 0, function* () {
                 return yield this._page.evaluate(() => {
                     const data = {
@@ -181,10 +179,10 @@ class ScrapGeolocation {
                         ratings: undefined,
                         reviews: undefined
                     };
-                    if (document.querySelector('.widget-pane-content-holder h1') != null) {
-                        data.name = document.querySelector('.widget-pane-content-holder h1').textContent.replace(/\r?\n|\r/g, '').trim();
+                    if (document.querySelector('h1') != null) {
+                        data.name = document.querySelector('h1').textContent.replace(/\r?\n|\r/g, '').trim();
                     }
-                    const elements = document.querySelectorAll(".widget-pane-content-holder .siAUzd-neVct > div > button");
+                    const elements = document.querySelectorAll(".m6QErb > div > button");
                     for (const element of elements) {
                         if (element.getAttribute("data-item-id") == "address") {
                             data.address = element.textContent.replace(/\r?\n|\r/g, '').trim();
@@ -219,11 +217,11 @@ class ScrapGeolocation {
                     if (reviews.length > 0) {
                         data.reviews = [];
                         for (const review of reviews) {
-                            const reviewer_name = review.querySelector(".ODSEW-ShBeI-title span") ? review.querySelector(".ODSEW-ShBeI-title span").textContent.replace(/\r?\n|\r/g, '').trim() : undefined;
-                            const reviews_amount = review.querySelector(".ODSEW-ShBeI-VdSJob span:nth-of-type(2)") ? review.querySelector(".ODSEW-ShBeI-VdSJob span:last-child").textContent.replace(/\r?\n|\r/g, '').trim() : undefined;
-                            const score = review.querySelector(".ODSEW-ShBeI-H1e3jb") ? review.querySelector(".ODSEW-ShBeI-H1e3jb").getAttribute("aria-label") : undefined;
-                            const date = review.querySelector(".ODSEW-ShBeI-RgZmSc-date") ? review.querySelector(".ODSEW-ShBeI-RgZmSc-date").textContent.replace(/\r?\n|\r/g, '').trim() : undefined;
-                            const rev = review.querySelector(".ODSEW-ShBeI-text") ? review.querySelector(".ODSEW-ShBeI-text").textContent.replace(/\r?\n|\r/g, '').trim() : undefined;
+                            const reviewer_name = review.querySelector(".WNxzHc.qLhwHc span") ? review.querySelector(".WNxzHc.qLhwHc span").textContent.replace(/\r?\n|\r/g, '').trim() : undefined;
+                            const reviews_amount = review.querySelector(".RfnDt span:nth-of-type(2)") ? review.querySelector(".RfnDt span:last-child").textContent.replace(/\r?\n|\r([^a-zA-Z0-9])/g, '').trim() : undefined;
+                            const score = review.querySelector(".kvMYJc") ? review.querySelector(".kvMYJc").getAttribute("aria-label") : undefined;
+                            const date = review.querySelector(".rsqaWe") ? review.querySelector(".rsqaWe").textContent.replace(/\r?\n|\r/g, '').trim() : undefined;
+                            const rev = review.querySelector(".wiI7pd") ? review.querySelector(".wiI7pd").textContent.replace(/\r?\n|\r/g, '').trim() : undefined;
                             data.reviews.push({ reviewer_name, reviews_amount, score, date, review: rev });
                         }
                     }
